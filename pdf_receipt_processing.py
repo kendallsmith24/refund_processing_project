@@ -57,7 +57,7 @@ for file_name in os.listdir(input_folder_path):
             receipt_detail_check = data.dropna(subset=['QTY', 'ITEM #', 'DESCRIPTION'])
             
             
-            # REGEX PATTERNS (courtesy of Google and ChatGPT)
+            # REGEX PATTERNS
             date_pattern = r'(\d{1,2}/\d{1,2}/\d{2})' # Returns date on receipt
             receipt_pattern = r'RECEIPT #[^\n]*?\b(\d{3,4})\b' # Returns receipt number (3 to 4 digit number after keyword "RECEIPT #")
             customer_pattern = r'ID NO.[^\n]*?([A-Za-z0-9]{6})' # Returns customer id number (First instance of 6-digit alphanumeric after keyword "ID NO.")
