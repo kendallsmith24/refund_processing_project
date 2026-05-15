@@ -171,36 +171,18 @@ for file_name in os.listdir(input_folder_path):
                                                 'refund_authorized', 
                                                 'refund_amount'])
 
-        # Aggregating recalculated line totals in the receipt_detail_check dataframe and assigning to the receipt_comparison dataframe
-        receipt_comparison['subtotal_recheck'] = receipt_detail_check.aggregate({'line_total':['sum']})
-        receipt_comparison = receipt_comparison.reset_index(drop=True)
+        receipt_comparison = receipt_comparison.assign(date_of_receipt = receipt_detail_check['date_of_receipt'].iloc[0:1], # Date of Receipt
+                                                        receipt_number = receipt_detail_check['receipt_number'].iloc[0:1], # Receipt Number
+                                                        subtotal_recheck = receipt_detail_check['line_total'].sum().astype(float), # Aggregating recalculated line totals in the receipt_detail_check dataframe and assigning to the receipt_comparison dataframe
+                                                        discount_recheck = receipt_detail_check['discount'].sum().astype(float), # Aggregating the recalculated discounts
+                                                        sales_tax = data['LINE TOTAL'].astype(float).iloc[-2], # Sales Tax Extraction
+                                                        total_recheck = (receipt_detail_check['line_total'].sum().astype(float) - receipt_detail_check['discount'].sum().astype(float)) + data['LINE TOTAL'].astype(float).iloc[-2].astype(float), # Recalculated Total (subtotal minus total discount plus sales tax)
+                                                        receipt_subtotal = data['LINE TOTAL'].astype(float).iloc[-3], # Subtotal Extraction
+                                                        receipt_discount = data['DISCOUNT'].astype(float).iloc[-4], # Total Discount Extraction
+                                                        receipt_total = data['LINE TOTAL'].astype(float).iloc[-1], # Receipt Total Extraction 
+                                                        receipt_comparison_difference = ((receipt_detail_check['line_total'].sum().astype(float) - receipt_detail_check['discount'].sum().astype(float)) + data['LINE TOTAL'].astype(float).iloc[-2].astype(float)) - data['LINE TOTAL'].astype(float).iloc[-1].astype(float)) # Difference between recalculated total and receipt total
 
-        # Aggregating the recalculated discounts
-        receipt_comparison['discount_recheck'] = receipt_detail_check['discount'].sum()
-
-        # Assigning the sales_tax value to the receipt_comparison dataframe
-        receipt_comparison['sales_tax'] = data['LINE TOTAL'].iloc[-2] # Sales Tax Extraction
-        receipt_comparison['sales_tax'] = receipt_comparison['sales_tax'].astype(float) # Converting to float
-
-        # Calculating the recalculated total (subtotal minus total discount plus sales tax)
-        receipt_comparison['total_recheck'] = (receipt_comparison['subtotal_recheck'] - receipt_comparison['discount_recheck'])\
-                                                        + receipt_comparison['sales_tax']
-        receipt_comparison['total_recheck'] = receipt_comparison['total_recheck'].astype(float) # Converting to float
-
-        # Extracting the original subtotal value from the receipt
-        receipt_comparison['receipt_subtotal'] = data['LINE TOTAL'].iloc[-3] # Subtotal Extraction
-        receipt_comparison['receipt_subtotal'] = receipt_comparison['receipt_subtotal'].astype(float) # Converting to float
-
-        # Extracting the original total discount value from the receipt
-        receipt_comparison['receipt_discount'] = data['DISCOUNT'].iloc[-4]
-        receipt_comparison['receipt_discount'] = receipt_comparison['receipt_discount'].astype(float) # Converting to float
-
-        # Extracting the original receipt total and assigning to the receipt_comparison dataframe
-        receipt_comparison['receipt_total'] = data['LINE TOTAL'].iloc[-1] # Receipt Total Extraction
-        receipt_comparison['receipt_total'] = receipt_comparison['receipt_total'].astype(float) # Converting to float
-
-        # Calculating the difference between the recalculated total and total shown on the original receipt
-        receipt_comparison['receipt_comparison_difference'] = receipt_comparison['total_recheck'] - receipt_comparison['receipt_total']
+        
         # Ensuring any negative value shows a positive with parentheses
         receipt_comparison['receipt_comparison_difference'] = receipt_comparison['receipt_comparison_difference'].apply(lambda x: f'({abs(x):.2f})' if x < 0 else f'{x:.2f}')
 
@@ -235,13 +217,8 @@ for file_name in os.listdir(input_folder_path):
         receipt_comparison['refund_amount'] = np.select(refund_amt_conditions, refund_amt_choices, default = receipt_comparison['receipt_comparison_difference'])
 
         ############################################################################################################################################################################################################
-        # DATE OF RECEIPT, RECEIPT NUMBER, AND RECEIPT ASSESSMENT DATE TO RECEIPT COMPARISON DATAFRAME
-        # Assigning the date_of_receipt value to the receipt_comparison dataframe
-        receipt_comparison['date_of_receipt'] = receipt_detail_check['date_of_receipt'].iloc[0:1]
-
-        # Assigning the receipt_number value to the receipt_comparison dataframe
-        receipt_comparison['receipt_number'] = receipt_detail_check['receipt_number'].iloc[0:1]
-
+        # RECEIPT ASSESSMENT DATE TO RECEIPT COMPARISON DATAFRAME
+        
         # Assigning value to when receipt was processed
         receipt_comparison['receipt_assessment_date'] = datetime.now().replace(microsecond=0) # .replace(microsecond=0 removes microseconds from output)
 
