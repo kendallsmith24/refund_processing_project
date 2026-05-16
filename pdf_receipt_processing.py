@@ -176,11 +176,11 @@ for file_name in os.listdir(input_folder_path):
                                                         subtotal_recheck = receipt_detail_check['line_total'].sum().astype(float), # Aggregating recalculated line totals in the receipt_detail_check dataframe and assigning to the receipt_comparison dataframe
                                                         discount_recheck = receipt_detail_check['discount'].sum().astype(float), # Aggregating the recalculated discounts
                                                         sales_tax = data['LINE TOTAL'].astype(float).iloc[-2], # Sales Tax Extraction
-                                                        total_recheck = (receipt_detail_check['line_total'].sum().astype(float) - receipt_detail_check['discount'].sum().astype(float)) + data['LINE TOTAL'].astype(float).iloc[-2].astype(float), # Recalculated Total (subtotal minus total discount plus sales tax)
+                                                        total_recheck = (receipt_detail_check['line_total'].sum().astype(float) - receipt_detail_check['discount'].sum().astype(float)) + data['LINE TOTAL'].astype(float).iloc[-2], # Recalculated Total (subtotal minus total discount plus sales tax)
                                                         receipt_subtotal = data['LINE TOTAL'].astype(float).iloc[-3], # Subtotal Extraction
                                                         receipt_discount = data['DISCOUNT'].astype(float).iloc[-4], # Total Discount Extraction
                                                         receipt_total = data['LINE TOTAL'].astype(float).iloc[-1], # Receipt Total Extraction 
-                                                        receipt_comparison_difference = ((receipt_detail_check['line_total'].sum().astype(float) - receipt_detail_check['discount'].sum().astype(float)) + data['LINE TOTAL'].astype(float).iloc[-2].astype(float)) - data['LINE TOTAL'].astype(float).iloc[-1].astype(float)) # Difference between recalculated total and receipt total
+                                                        receipt_comparison_difference = ((receipt_detail_check['line_total'].sum().astype(float) - receipt_detail_check['discount'].sum().astype(float)) + data['LINE TOTAL'].astype(float).iloc[-2] - data['LINE TOTAL'].astype(float).iloc[-1])) # Difference between recalculated total and receipt total
 
         
         # Ensuring any negative value shows a positive with parentheses
